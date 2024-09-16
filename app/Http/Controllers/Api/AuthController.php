@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\BaseController as BaseController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
-class AuthController extends Controller
+class AuthController extends BaseController
 {
-    //
     public function signup(Request $req){
         //validate the user data
         $validateUser = Validator::make(
@@ -23,11 +22,8 @@ class AuthController extends Controller
 
         //if the validation fails then gives error
         if($validateUser->fails()){
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation Error',
-                'errors' => $validateUser->errors()->all()
-            ],401);
+            $errormessage = $validateUser->errors()->all();
+            return $this->sendError('Validation Error',$errormessage,401);
         }
 
         //if the authentication pass then store the data
@@ -38,11 +34,7 @@ class AuthController extends Controller
         ]);
 
         //if the data is inserted successfully
-        return response()->json([
-            'status' =>true,
-            'message' => 'User Created successfully',
-            'user' => $user,
-        ],200);
+        return $this->sendResponse($user,'User Created successfully');
 
     }
     public function login(Request $req){
@@ -55,11 +47,8 @@ class AuthController extends Controller
 
         //if the authentication fails
         if($validateUser->fails()){
-            return response()->json([
-                'status' => false,
-                'message' => 'User Authentication Fails',
-                'errors' => $validateUser->errors()->all()
-            ],404);
+            $errormessage = $validateUser->errors()->all();
+            return $this->sendError('User Authentication Fails',$errormessage,404);
         }
 
         $authenticatedUser = [
@@ -75,11 +64,11 @@ class AuthController extends Controller
                     'token' => $authUser->createToken("API Token")->plainTextToken,
                     'token_type' => 'bearer',
                 ],200);
+                
             }else{
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Email, Password wrong',
-                ],401);
+
+                $errormessage = '';
+                return $this->sendError('Email, Password wrong',$errormessage,401);                
             }
     }
     public function logout(Request $req){
@@ -87,10 +76,6 @@ class AuthController extends Controller
         $loggedUser->currentAccessToken()->delete();
 
         //loggout successful
-        return response()->json([
-            'status' => true,
-            'user' => $loggedUser,
-            'message' => 'Logged out successfully',
-        ],200);
+        return $this->sendResponse($loggedUser,'Logged out successfully');
     }
 }

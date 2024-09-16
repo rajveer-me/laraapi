@@ -1,13 +1,5 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
-
-## About Laravel
+## About Laravel API
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
@@ -22,45 +14,84 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
 ## Learning Laravel
+1. install the sanctum api. (php artisan install:api).
+2. create a user model add the (use hasApiTokens).
+3. add fillable according to you.
+4. make a authController in the api folder (make:controller Api/AuthController).
+5. make three functions signup,signin,login. [Authcontroller](https://github.com/rajveer-me/laraapi/blob/master/app/Http/Controllers/Api/AuthController.php)
+    public function signup(Request $req){
+        //validate the user data
+        $validateUser = Validator::make(
+            $req->all(),[
+                'name' => 'required',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required',
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+            ]);
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+        //if the validation fails then gives error
+        if($validateUser->fails()){
+            $errormessage = $validateUser->errors()->all();
+            return $this->sendError('Validation Error',$errormessage,401);
+        }
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+        //if the authentication pass then store the data
+        $user = User::create([
+            'name' => $req->name,
+            'email' => $req->email,
+            'password' => $req->password,
+        ]);
 
-## Laravel Sponsors
+        //if the data is inserted successfully
+        return $this->sendResponse($user,'User Created successfully');
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+    }
+    public function login(Request $req){
+        $validateUser = Validator::make(
+            $req->all(),
+            [
+                'email' => 'required|email',
+                'password' => 'required',
+            ]);
 
-### Premium Partners
+        //if the authentication fails
+        if($validateUser->fails()){
+            $errormessage = $validateUser->errors()->all();
+            return $this->sendError('User Authentication Fails',$errormessage,404);
+        }
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+        $authenticatedUser = [
+            'email'=>$req->email,
+            'password' => $req->password
+        ];
+        //if the authentication pass 
+        if(Auth::attempt($authenticatedUser)){
+            $authUser = Auth::user();
+                return response()->json([
+                    'status' =>true,
+                    'message' => 'User Logged successfully',
+                    'token' => $authUser->createToken("API Token")->plainTextToken,
+                    'token_type' => 'bearer',
+                ],200);
+                
+            }else{
 
-## Contributing
+                $errormessage = '';
+                return $this->sendError('Email, Password wrong',$errormessage,401);                
+            }
+    }
+    public function logout(Request $req){
+        $loggedUser = $req->user();
+        $loggedUser->currentAccessToken()->delete();
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+        //loggout successful
+        return $this->sendResponse($loggedUser,'Logged out successfully');
+    }
 
-## Code of Conduct
+6. make one base controller for sendResponse and error message. which we use in auth and post controller.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+7. make one posts migration file, model and postcontroller in api folder with resource (make:controller Api/PostController --api). [postcontroller](https://github.com/rajveer-me/laraapi/blob/master/app/Http/Controllers/Api/PostController.php)
+8. in post model add (fillable ['title','description','image']).
+9. in the post controller make all function code and in the api.php make route.
+10. to list route use(route:list).
+11. now you can test on postman.
