@@ -19,6 +19,8 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
 3. add fillable according to you.
 4. make a authController in the api folder (make:controller Api/AuthController).
 5. make three functions signup,signin,login. [Authcontroller](https://github.com/rajveer-me/laraapi/blob/master/app/Http/Controllers/Api/AuthController.php)
+    
+    // signup function
     public function signup(Request $req){
         //validate the user data
         $validateUser = Validator::make(
@@ -26,7 +28,6 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
                 'name' => 'required',
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required',
-
             ]);
 
         //if the validation fails then gives error
@@ -46,6 +47,7 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
         return $this->sendResponse($user,'User Created successfully');
 
     }
+    //login function 
     public function login(Request $req){
         $validateUser = Validator::make(
             $req->all(),
@@ -80,6 +82,7 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
                 return $this->sendError('Email, Password wrong',$errormessage,401);                
             }
     }
+    //logout function
     public function logout(Request $req){
         $loggedUser = $req->user();
         $loggedUser->currentAccessToken()->delete();
