@@ -84,7 +84,7 @@ class AuthController extends Controller
     }
     public function logout(Request $req){
         $loggedUser = $req->user();
-        $loggedUser->token()->delete();
+        $loggedUser->currentAccessToken()->delete();
 
         //loggout successful
         return response()->json([
