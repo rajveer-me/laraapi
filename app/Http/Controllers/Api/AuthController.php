@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends BaseController
 {
     public function signup(Request $req){
+
         //validate the user data
         $validateUser = Validator::make(
             $req->all(),[
@@ -32,12 +33,14 @@ class AuthController extends BaseController
             'email' => $req->email,
             'password' => $req->password,
         ]);
+        
 
         //if the data is inserted successfully
         return $this->sendResponse($user,'User Created successfully');
 
     }
     public function login(Request $req){
+
         $validateUser = Validator::make(
             $req->all(),
             [

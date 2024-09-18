@@ -98,3 +98,5 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
 9. in the post controller make all function code and in the api.php make route.
 10. to list route use(route:list).
 11. now you can test on postman.
+
+12. make the blade template for login, allpost (post display modal and post delete modal), addpost.

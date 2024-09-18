@@ -19,7 +19,16 @@ class PostController extends BaseController
         // show all posts
         $posts = Post::all();
 
-        return $this->sendResponse($posts,'All Posts here');
+        //return $this->sendResponse($posts,'All Posts here');
+        $response = [
+            'success' => true,
+            'message' => "All posts data",
+            'data' => [
+                'posts' => $posts
+            ]
+        ];
+
+        return response()->json($response,200);
     }
 
     /**
@@ -88,25 +97,21 @@ class PostController extends BaseController
     public function update(Request $req, string $id)
     {
         //validate the post data
-        $validatePost = Validator::make(
-            $req->all(),[
-                'title' => 'required',
-                'description' => 'required',
-                'image' => 'required|mimes:png,jpg,jpeg,gif',
-
-            ]);
-
-        //if the validation fails then gives error
-        if($validatePost->fails()){
-            $errormessage = $validatePost->errors()->all();
-            return $this->sendError('Validation Error',$errormessage,401);
+        $validatePost = Validator::make($req->all(), [
+            'title' => 'required',
+            'description' => 'required',
+            'image' => 'nullable|image|mimes:png,jpg,jpeg,gif',
+        ]);
+    
+        if ($validatePost->fails()) {
+            return $this->sendError('Validation Error', $validatePost->errors()->all(), 401);
         }
 
         //get the post data
         $postData = Post::select('id','image')->where('id',$id)->get();
         //delete the post image if exist
         if($req->hasFile('image') != ''){
-            $path = public_path(). '/uploads';
+            $path = public_path() . '/uploads/';
 
             if($postData[0]->image !='' && $postData[0]->image != null ){
                 $old_file = $path .'/'. $postData[0]->image;
@@ -120,7 +125,7 @@ class PostController extends BaseController
             $imageName = time(). '.' .$exten;
             $img->move(public_path(). '/uploads',$imageName);
         }else{
-            $imageName = $postData->image;
+            $imageName = $postData[0]->image;
         }
 
         
